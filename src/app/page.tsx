@@ -1,35 +1,55 @@
 "use client";
 
-import { PromptBar } from "@/components/prompt-bar";
-import { ContentGrid } from "@/components/content-grid";
-import { useState, useCallback } from "react";
+import { useState, useRef, useEffect } from 'react';
+import { Header } from '@/components/layout/Header';
+import { CanvasArea } from '@/components/canvas/CanvasArea';
+import { PropertiesPanel } from '@/components/panels/PropertiesPanel';
+import { ToolDock } from '@/components/tools/ToolDock';
+import { ChatWidget } from '@/components/chat/ChatWidget';
+import { ModalsContainer } from '@/components/modals/ModalsContainer';
+import { Toast } from '@/components/ui/Toast';
+import { useCanvasStore } from '@/store/canvasStore';
+import { useUIStore } from '@/store/uiStore';
 
-export default function Home() {
-  const [generateHandler, setGenerateHandler] = useState<((type: "image" | "video", prompt: string) => void) | null>(null);
+export default function OroOSPage() {
+  const { layers, activeLayerIndex, createNewLayer } = useCanvasStore();
+  const { toast } = useUIStore();
 
-
-  const handleSetGenerator = useCallback((handler: (type: "image" | "video", prompt: string) => void) => {
-    setGenerateHandler(() => handler);
-  }, []);
-
-  const handleSetImageToVideo = useCallback(() => {
-    // Handler is set up in ContentGrid component
-  }, []);
+  useEffect(() => {
+    // Initialize with background layer
+    if (layers.length === 0) {
+      createNewLayer("Background", true);
+    }
+  }, [layers.length, createNewLayer]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Fixed prompt bar at top */}
-      <div className="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <PromptBar onGenerate={generateHandler || undefined} />
+    <div className="oro-os-container">
+      {/* Bauhaus-inspired geometric background */}
+      <div className="bauhaus-bg">
+        <div className="geometric-shape shape-1" />
+        <div className="geometric-shape shape-2" />
+        <div className="geometric-shape shape-3" />
       </div>
-      
-      {/* Main content area */}
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <ContentGrid 
-          onNewGeneration={handleSetGenerator}
-          onImageToVideo={handleSetImageToVideo}
-        />
-      </main>
+
+      <div className="oro-layout">
+        <Header />
+        
+        <main className="oro-main">
+          <CanvasArea />
+          <PropertiesPanel />
+        </main>
+
+        <ToolDock />
+        <ChatWidget />
+        <ModalsContainer />
+        
+        {toast.show && (
+          <Toast 
+            message={toast.message} 
+            type={toast.type} 
+          />
+        )}
+      </div>
     </div>
   );
 }
